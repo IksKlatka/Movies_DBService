@@ -1,0 +1,11 @@
+#python files
+trials.py
+inserting_data.sql
+
+#folders
+venv
+datas
+
+#configuration files
+migrations/.env
+migrations/README
