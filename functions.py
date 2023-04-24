@@ -16,14 +16,15 @@ def get_cast_of_movie(movie_id: int, cast_field: str) -> list[CastEntry]:
     return entries
 
 def get_cast():
-    casts_ = list(df('cast'))
+    df = pd.read_csv('datas/tmdb_5000_credits.csv')
+    casts_ = list(df['cast'])
     return casts_
 
 def get_actors(casts: list[str]) -> Iterable[Actor]:
     actors = []
     for a, movie in enumerate(casts):
         entries = get_cast_of_movie(a, movie)
-        actors.extend([(c.id, c.name) for c in entries])
+        actors.extend([(e.id, e.name) for e in entries])
     actors = set(actors)
     return actors
 
@@ -89,6 +90,18 @@ def get_crew_of_movie(index: int, crew_field: str) -> list[CrewEntry]:
         entries.append(entry)
     return entries
 
+def get_crew():
+    df = pd.read_csv('datas/tmdb_5000_credits.csv')
+    crew_ = list(df['crew'])
+    return crew_
+
+def get_persons(crews: list) -> Iterable[CrewPerson]:
+    people = []
+    for c, movie in enumerate(crews):
+        entries = get_crew_of_movie(c, movie)
+        people.extend([(e.id, e.name) for e in entries])
+    people = set(people)
+    return people
 def check_assignment_crew(crew: list[str]):
 
     name_id_pairs = []

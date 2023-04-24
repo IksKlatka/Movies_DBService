@@ -2,14 +2,14 @@ from dataclasses import dataclass
 
 @dataclass
 class CastEntry:
-    movie_index: int
+    movie_id: int  # dodane... rząd w csv-ie
+    id: int  # id of the actor
     cast_id: int
     character: str
     credit_id: str
     gender: int
-    id: int
     name: str
-    order: int
+    order: int # !!!!!!
 
 @dataclass
 class Actor:
@@ -40,6 +40,11 @@ class CrewEntry:
 class Movie:
     movie_id: int
     title: str
+
+@dataclass
+class CrewPerson:
+    person_id: int
+    name: str
 
 @dataclass
 class Language:
