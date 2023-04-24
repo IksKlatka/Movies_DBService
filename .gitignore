@@ -5,6 +5,8 @@ inserting_data.sql
 #folders
 venv
 datas
+.idea
+__pycache__
 
 #configuration files
 migrations/.env
