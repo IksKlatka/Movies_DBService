@@ -20,7 +20,7 @@ def upgrade() -> None:
     op.execute(f"""
     --sql 
     CREATE TABLE languages (
-        lang_id SERIAL NOT NULL PRIMARY KEY,
+        lang_id VARCHAR(2) UNIQUE PRIMARY KEY,
         lang TEXT NOT NULL
     )
 

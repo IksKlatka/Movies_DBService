@@ -1,15 +1,13 @@
 from asyncio import run, sleep
-
 import asyncpg
 from dotenv import load_dotenv
 from os import getenv
-
 from model import *
+
 
 load_dotenv()
 URL = getenv('DATABASE_URL')
 SCHEMA = getenv('SCHEMA')
-
 
 class DbService:
 
@@ -108,9 +106,9 @@ class DbService:
 async def main_():
     db = DbService()
     await db.initialize()
-    await db.upsert_movieactor(
-        MovieActor(movie_id=25975, actor_id=155007, cast_id=7, character='Himself',
-                   credit_id='58ce0164c3a3685104015b28', gender=2, orders=7))
+    # await db.upsert_movieactor(
+    #     MovieActor(movie_id=25975, actor_id=155007, cast_id=7, character='Himself',
+    #                credit_id='58ce0164c3a3685104015b28', gender=2, orders=7))
 
 
 if __name__ == '__main__':

@@ -11,3 +11,4 @@ __pycache__
 #configuration files
 migrations/.env
 migrations/README
+.env

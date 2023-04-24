@@ -20,8 +20,8 @@ def upgrade() -> None:
     op.execute(f"""
     --sql 
     CREATE TABLE movie_languages (
-        movie_id INT,
-        lang_id INT,
+        movie_id INT NOT NULL,
+        lang_id VARCHAR(2) NOT NULL,
         
         CONSTRAINT fk_movie_id FOREIGN KEY (movie_id)
             REFERENCES movies(movie_id),
