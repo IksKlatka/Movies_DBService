@@ -20,11 +20,11 @@ def upgrade() -> None:
     op.execute(f"""
     --sql
     CREATE TABLE movie_actors(
-        credit_id   TEXT, 
         movie_id    INT,
         actor_id    INT, 
         cast_id     INT,
-        character   TEXT, 
+        character   TEXT,
+        credit_id   TEXT, 
         gender      INT, 
         orders      INT,        
     

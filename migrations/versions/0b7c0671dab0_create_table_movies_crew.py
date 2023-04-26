@@ -29,7 +29,7 @@ def upgrade() -> None:
         CONSTRAINT fk_movie_id FOREIGN KEY (movie_id)
             REFERENCES movies(movie_id),
         CONSTRAINT fk_person_id FOREIGN KEY (person_id)
-            REFERENCES crew(crew_id)      
+            REFERENCES crew(person_id)      
     )
 
 """)

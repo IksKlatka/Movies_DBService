@@ -20,7 +20,7 @@ def upgrade() -> None:
     op.execute(f"""
     --sql 
     CREATE TABLE crew(
-        crew_id SERIAL PRIMARY KEY,
+        person_id SERIAL PRIMARY KEY,
         name TEXT
     );
 """)

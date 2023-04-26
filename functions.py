@@ -95,7 +95,7 @@ def get_crew():
     crew_ = list(df['crew'])
     return crew_
 
-def get_persons(crews: list) -> Iterable[CrewPerson]:
+def get_people(crews: list) -> Iterable[CrewPerson]:
     people = []
     for c, movie in enumerate(crews):
         entries = get_crew_of_movie(c, movie)
@@ -180,8 +180,40 @@ def get_movie_actors(filename: str) -> Iterable[MovieActor]:
     return result
 
 
+# LANGUAGES ----------------
+def get_spoken_langs(filename: str):
+    """
+    all spoken languages with iso code
+    at the same time => filling for languages table
+    """
+    df = pd.read_csv(filename)
+    spoken_langs = list(df['spoken_languages'])
+    entries = []
+    for spoken in spoken_langs:
+        dicts = json.loads(spoken)
+        for d in dicts:
+            entry = Language(lang_id=d['iso_639_1'], lang=d['name'])
+            if entry not in entries:
+                entries.append(entry)
+
+    return entries
+
+def get_movie_lang(filename: str):
+
+    df = pd.read_csv(filename) #movies.csv
+    subframe = df.loc[:, ['id', 'original_language']]
+    subframe_as_dict = subframe.to_dict(orient='records')
+    movie_lang = [MovieLanguage(movie_id=d['id'], lang_id=d['original_language'])\
+              for d in subframe_as_dict]
+
+    return(movie_lang)
+
+
 if __name__ == '__main__':
     df = pd.read_csv('./datas/tmdb_5000_credits.csv')
     casts_ = list(df['cast'])  # list[str]
     crew_ = list(df['crew'])
+
+
+
 

@@ -37,14 +37,26 @@ class CrewEntry:
     name: str
 
 @dataclass
+class CrewPerson:
+    person_id: int
+    name: str
+
+@dataclass
+class MovieCrew:
+    movie_index: int
+    credit_id: int
+    department: str
+    gender: int
+    id: int
+    job: str
+    name: str
+
+@dataclass
 class Movie:
     movie_id: int
     title: str
 
-@dataclass
-class CrewPerson:
-    person_id: int
-    name: str
+
 
 @dataclass
 class Language:
