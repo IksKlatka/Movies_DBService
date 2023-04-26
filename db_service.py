@@ -148,7 +148,8 @@ class DbService:
         async with self.pool.acquire() as connection:
             row = await connection.fetchrow('select * from languages '
                                             'where lang_id=$1', lang_id)
-        return Language(**dict(row)) if row else None
+        result = Language(**dict(row)) if row else None
+        print(result)
 
     async def get_languages(self, offset=0, limit=100) -> list[Language]:
         async with self.pool.acquire() as connection:
@@ -175,7 +176,8 @@ class DbService:
         async with self.pool.acquire() as connection:
             row = await connection.fetchrow('select * from movie_languages '
                                             'where movie_id=$1', movie_id)
-        return MovieLanguage(**dict(row)) if row else None
+        result = MovieLanguage(**dict(row)) if row else None
+        print(result)
 
     async def upsert_movie_language(self, movie_lang: MovieLanguage) -> MovieLanguage:
         ml = movie_lang
@@ -193,7 +195,8 @@ class DbService:
 async def main_():
     db = DbService()
     await db.initialize()
-    await db.get_actor(actor_id=63313)
+    # await db.get_language(lang_id='en')
+    await db.get_movie_language(movie_id=285)
 
 
 if __name__ == '__main__':

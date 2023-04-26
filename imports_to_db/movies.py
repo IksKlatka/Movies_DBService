@@ -9,7 +9,7 @@ async def create_movies():
     db = DbService()
     await db.initialize()
 
-    movies = get_movies('datas/tmdb_5000_movies.csv')
+    movies = get_movies('../datas/tmdb_5000_movies.csv')
     print(f'all movies: {len(movies)}')
     tasks = []
     for i, m in enumerate(movies):

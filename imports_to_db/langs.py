@@ -8,7 +8,7 @@ async def create_languages():
     db = DbService()
     await db.initialize()
 
-    langs = get_spoken_langs('datas/tmdb_5000_movies.csv')
+    langs = get_spoken_langs('../datas/tmdb_5000_movies.csv')
 
     for l, lang in enumerate(langs):
         await db.upsert_language(lang)
@@ -22,7 +22,7 @@ async def create_movie_languages():
     db = DbService()
     await db.initialize()
 
-    movie_langs = get_movie_lang('datas/tmdb_5000_movies.csv')
+    movie_langs = get_movie_lang('../datas/tmdb_5000_movies.csv')
 
     for ml, mlang in enumerate(movie_langs):
         await  db.upsert_movie_language(MovieLanguage(movie_id=mlang.movie_id,
