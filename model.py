@@ -80,6 +80,11 @@ class Company:
     name: str
 
 @dataclass
+class Pcompany:
+    company_id: int
+    name: str
+
+@dataclass
 class MovieCompany:
     movie_id: int
     company_id: int
