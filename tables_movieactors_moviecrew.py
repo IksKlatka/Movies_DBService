@@ -5,7 +5,7 @@ Collecting data to tables:
 """
 import pandas as pd
 import json
-from model import CastEntry, CrewEntry
+from model import *
 
 pd.set_option('display.max_columns', None)
 
@@ -13,7 +13,7 @@ def get_cast(index: int, cast_field: str):
     dicts = json.loads(cast_field)
     entries = []
     for d in dicts:
-        entry = CastEntry(movie_index=index, **d)
+        entry = CastEntry(movie_id=index, **d)
         entries.append(entry)
 
     return entries
@@ -26,6 +26,7 @@ def get_crew(index: int, cast_field: str):
         entries.append(entry)
 
     return entries
+
 
 
 def create_movie_actors_table(df: pd.DataFrame):
@@ -44,19 +45,19 @@ def create_movie_actors_table(df: pd.DataFrame):
 
     # changing order of columns
     movieactor_entries = movieactor_entries.set_index(['movie_index'])
-    movieactor_entries = movieactor_entries[['credit_id', 'actor_id', 'cast_id',
-                                   'character', 'gender', 'orders']]
+    movieactor_entries = movieactor_entries[['actor_id', 'cast_id',
+                                   'character', 'credit_id', 'gender', 'orders']]
 
     # adding extra column necessary in the table
-    movieactor_entries['movie_id'] = mdf['id']
-    movieactor_entries.insert(1, 'movie_id', movieactor_entries.pop('movie_id'))
+    movieactor_entries['movie_index'] = mdf['id']
+    movieactor_entries.insert(0, 'movie_index', movieactor_entries.pop('movie_index'))
     # movieactor_entries.info()
 
     #reset index (from movie_index) & set it to credit_id
     movieactor_entries = movieactor_entries.reset_index(drop=True)
     # movieactor_entries = movieactor_entries.set_index('credit_id')
 
-    return movieactor_entries
+    return movieactor_entries #
 
 def create_movie_crew_table(df: pd.DataFrame):
 
@@ -69,16 +70,16 @@ def create_movie_crew_table(df: pd.DataFrame):
 
     moviecrew_table = pd.DataFrame(all_crew_entries)
 
-    #enable inserting valid movie_id by setting index = movie_index
+    #enable inserting valid movie_index by setting index = movie_index
     moviecrew_table = moviecrew_table.set_index(['movie_index'])
-    moviecrew_table['movie_id'] = cdf['movie_id']
+    moviecrew_table['movie_index'] = cdf['movie_index']
 
-    #placing movie_id column on the right place in DF
-    moviecrew_table.insert(2, 'movie_id', moviecrew_table.pop('movie_id'))
+    #placing movie_index column on the right place in DF
+    moviecrew_table.insert(2, 'movie_index', moviecrew_table.pop('movie_index'))
 
     #renaming column and changing their order in DF
     moviecrew_table = moviecrew_table.rename(columns={'id': 'person_id'})
-    moviecrew_table = moviecrew_table[['credit_id', 'movie_id', 'person_id',
+    moviecrew_table = moviecrew_table[['credit_id', 'movie_index', 'person_id',
                              'job', 'department', 'gender']]
 
     moviecrew_table = moviecrew_table.reset_index(drop= True)
@@ -86,7 +87,6 @@ def create_movie_crew_table(df: pd.DataFrame):
 
     return  moviecrew_table
     # save_to_file(moviecrew_table, 'table_moviecrew.csv')
-
 
 def save_to_file(dataframe: pd.DataFrame, filename: str):
     dataframe.to_csv(rf'C:/Users/igakl/Desktop/MOVIES/datas/{filename}',
@@ -102,7 +102,8 @@ if __name__ == '__main__':
     movieactors = create_movie_actors_table(cdf)
     moviecrew = create_movie_crew_table(cdf)
 
-    print('movie actors table: ')
-    movieactors.info()
-    print('---'*15, '\nmovie crew table: ')
-    moviecrew.info()
+    # movieactors.info()
+    # print('movie actors table: ')
+    # movieactors.info()
+    # print('---'*15, '\nmovie crew table: ')
+    # moviecrew.info()

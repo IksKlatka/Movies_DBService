@@ -14,7 +14,7 @@ def get_cast(index: int, cast_field: str):
     dicts = json.loads(cast_field)
     entries = []
     for d in dicts:
-        entry = CastEntry(movie_index=index, **d)
+        entry = CastEntry(movie_id=index, **d)
         entries.append(entry)
 
     return entries

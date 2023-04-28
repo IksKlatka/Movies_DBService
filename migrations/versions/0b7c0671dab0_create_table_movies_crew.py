@@ -19,11 +19,11 @@ def upgrade() -> None:
     op.execute(f"""
     --sql
     CREATE TABLE movie_crew(
-        credit_id TEXT,
         movie_id INT,
         person_id INT,
-        job TEXT,
+        credit_id TEXT,
         department TEXT,
+        job TEXT,
         gender INT,
 
         CONSTRAINT fk_movie_id FOREIGN KEY (movie_id)

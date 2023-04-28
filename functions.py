@@ -1,5 +1,4 @@
 import json
-from collections import defaultdict
 from collections.abc import Iterable
 import pandas as pd
 from model import *
@@ -7,6 +6,11 @@ from model import *
 pd.options.display.max_rows = 10
 
 # ACTORS ----------------
+def get_cast():
+    df = pd.read_csv('./datas/tmdb_5000_credits.csv')
+    casts_ = list(df['cast'])
+    return casts_
+
 def get_cast_of_movie(movie_id: int, cast_field: str) -> list[CastEntry]:
     dicts = json.loads(cast_field)
     entries = []
@@ -14,13 +18,10 @@ def get_cast_of_movie(movie_id: int, cast_field: str) -> list[CastEntry]:
         entry = CastEntry(movie_id=movie_id, **d)
         entries.append(entry)
     return entries
+    # print(entries)
 
-def get_cast():
-    df = pd.read_csv('datas/tmdb_5000_credits.csv')
-    casts_ = list(df['cast'])
-    return casts_
-
-def get_actors(casts: list[str]) -> Iterable[Actor]:
+def get_actors_of_movie(casts: list[str]) -> Iterable[Actor]:
+    """returns id:name pairs"""
     actors = []
     for a, movie in enumerate(casts):
         entries = get_cast_of_movie(a, movie)
@@ -28,60 +29,15 @@ def get_actors(casts: list[str]) -> Iterable[Actor]:
     actors = set(actors)
     return actors
 
-def check_unique_cast_credit_id(casts: list[str]):
-    credit_ids = []
-    for i, movie in enumerate(casts):
-        entries = get_cast_of_movie(i, movie)
-        credit_ids.extend([c.credit_id for c in entries])
 
-    unique = (len(credit_ids) == len(set(credit_ids)))
-    print(f'{unique=}')
-
-def check_assignment_cast(cast: list[str]):
-
-    name_id_pairs = []
-
-    for i, movie in enumerate(cast):
-        entries = get_cast_of_movie(i, movie)
-        for e in entries:
-            print(e)
-        name_id_pairs.extend([(c.id, c.name) for c in entries])
-
-    unique_pairs = set(name_id_pairs)
-    n_pairs = len(unique_pairs)
-    n_names = len(set([c for i, c in unique_pairs]))  # unique names
-    n_ids = len(set([i for i, c in unique_pairs]))  # unique id's
-
-    print(f'{n_pairs=}')
-    print(f'{n_ids=}')
-    print(f'{n_names=}')
-
-    def find_duplicates_cast(casts: list[str]):
-        name_id_pairs = []
-        for i, movie in enumerate(casts):
-            entries = get_cast_of_movie(i, movie)
-            name_id_pairs.extend([(c.id, c.name) for c in entries])
-
-        unique_pairs = set(name_id_pairs)
-        id_to_name = defaultdict(lambda: set())
-        for (id, name) in unique_pairs:
-            id_to_name[id].add(name)
-
-        for (k, v) in id_to_name.items():
-            if len(v) > 1:
-                print('id->names ', k, v)
-
-        # -----
-        name_to_id = defaultdict(lambda: set())
-        for (id, name) in unique_pairs:
-            name_to_id[name].add(id)
-
-        for (k, v) in name_to_id.items():
-            if len(v) > 4:
-                print('name->ids ', k, v)
 
 
 # CREW ----------------
+def get_crew():
+    df = pd.read_csv('datas/tmdb_5000_credits.csv')
+    crew_ = list(df['crew'])
+    return crew_
+
 def get_crew_of_movie(index: int, crew_field: str) -> list[CrewEntry]:
     dicts = json.loads(crew_field)
     entries = []
@@ -90,72 +46,25 @@ def get_crew_of_movie(index: int, crew_field: str) -> list[CrewEntry]:
         entries.append(entry)
     return entries
 
-def get_crew():
-    df = pd.read_csv('datas/tmdb_5000_credits.csv')
-    crew_ = list(df['crew'])
-    return crew_
-
-def get_people(crews: list) -> Iterable[CrewPerson]:
+def get_crew_people(crews: list) -> Iterable[CrewPerson]:
+    """returns id:name pairs"""
     people = []
     for c, movie in enumerate(crews):
         entries = get_crew_of_movie(c, movie)
         people.extend([(e.id, e.name) for e in entries])
     people = set(people)
     return people
-def check_assignment_crew(crew: list[str]):
+    # print(people)
 
-    name_id_pairs = []
+def to_movie_crew(crew_entry: CrewEntry) -> MovieCrew:
 
+    c = crew_entry
+    return MovieCrew(movie_id=c.movie_index, person_id=c.id, credit_id=c.credit_id,
+                     department=c.department, gender=c.gender, job=c.job)
 
-    for i, movie in enumerate(crew):
-        entries = get_crew_of_movie(i, movie)
-        for e in entries:
-            print(e)
-        name_id_pairs.extend([(c.id, c.name) for c in entries])
-
-    unique_pairs = set(name_id_pairs)
-    n_pairs = len(unique_pairs)
-    n_names = len(set([c for i, c in unique_pairs]))  # unique names
-    n_ids = len(set([i for i, c in unique_pairs]))  # unique id's
-
-    print(f'{n_pairs=}')
-    print(f'{n_ids=}')
-    print(f'{n_names=}')
-
-def find_duplicates_crew(crews: list[str]):
-    name_id_pairs =[]
-    for i, movie in enumerate(crews):
-        entries = get_crew_of_movie(i, movie)
-        name_id_pairs.extend([(c.id, c.name) for c in entries]) #comprehension
-
-    unique_pairs = set(name_id_pairs)
-    id_to_name = defaultdict(lambda : set())
-    for (id, name) in unique_pairs:
-        id_to_name[id].add(name)
-
-    for (k, v) in id_to_name.items():
-        if len(v) > 1:
-            print('name -> ids: ', k, v)
-
-    # -----
-    name_to_id = defaultdict(lambda : set())
-    for (id, name) in unique_pairs:
-        name_to_id[name].add(id)
-
-    for (k,v) in name_to_id.items():
-        if len(v) > 4:
-            print('name -> ids: ', k, v)
 
 
 #MOVIES ----------------
-
-def to_movie_actor(cast_entry: CastEntry) -> MovieActor:
-    """Create MovieActor object from CastEntry object"""
-    elem = cast_entry
-    return MovieActor(movie_id=elem.movie_id, actor_id=elem.id, cast_id=elem.cast_id,
-                      character=elem.character, credit_id=elem.credit_id, gender=elem.gender,
-                      orders=elem.order)
-
 def get_movies(filename: str) -> Iterable[Movie]:
     """Get movies from CSV"""
     df = pd.read_csv(filename)
@@ -168,15 +77,37 @@ def get_movies(filename: str) -> Iterable[Movie]:
 def get_movie_actors(filename: str) -> Iterable[MovieActor]:
     """Correctly assigning actors to movies"""
     df = pd.read_csv(filename)
-    subframe = df.loc[:, ['movie_id', 'cast']]
+    subframe = df.loc[:, ['movie_index', 'cast']]
     subframe_as_dict = subframe.to_dict(orient='records')
     result = []
     for row in subframe_as_dict:
-        movie_id = row['movie_id']
+        movie_id = row['movie_index']
         cast_string = row['cast']
         all_casts = get_cast_of_movie(movie_id, cast_string)
         all_casts = [to_movie_actor(ac) for ac in all_casts]
         result.extend(all_casts)
+    return result
+
+def to_movie_actor(cast_entry: CastEntry) -> MovieActor:
+    """Create MovieActor object from CastEntry object"""
+    c = cast_entry
+    return MovieActor(movie_id=c.movie_id, actor_id=c.id, cast_id=c.cast_id,
+                      character=c.character, credit_id=c.credit_id, gender=c.gender,
+                      orders=c.order)
+
+def get_movie_crew(filename: str) -> Iterable[MovieCrew]:
+    """Correctly assigning crew people to movies"""
+    df = pd.read_csv(filename)
+    subframe = df.loc[:, ['movie_index', 'crew']]
+    subframe_as_dict = subframe.to_dict(orient='records')
+    result=[]
+    for row in subframe_as_dict:
+        movie_id = row['movie_index']
+        crew = row['crew']
+        all_crew = get_crew_of_movie(movie_id, crew)
+        all_crew = [to_movie_crew(ac) for ac in all_crew]
+        result.extend(all_crew)
+
     return result
 
 
@@ -209,11 +140,63 @@ def get_movie_lang(filename: str):
     return(movie_lang)
 
 
+# PRODUCTION COMPANIES --------------
+
+def get_companies() -> list[Company]:
+    """COMPANY object"""
+    df= pd.read_csv('datas/tmdb_5000_movies.csv')
+    comps = df['production_companies']
+    entries = []
+    for c in comps:
+        dicts = json.loads(c)
+        for d in dicts:
+            entry = Company(**d)
+            if entry not in entries:
+                entries.append(entry)
+
+    return entries
+
+def companies_for_movie(index: int, company_field: str):
+    """COMPANY ENTRY object"""
+    dicts = json.loads(company_field)
+    comps = []
+    for d in dicts:
+        company = CompanyEntry(index, **d)
+        comps.append(company)
+
+    return comps
+
+def get_company_of_movie() -> list[MovieCompany]:
+
+    df= pd.read_csv('datas/tmdb_5000_movies.csv')
+    subframe = df.loc[:, ['id', 'production_companies']]
+    subframe_as_dict = subframe.to_dict(orient='records')
+
+    result = []
+    for r, row in enumerate(subframe_as_dict):
+        movie_id = row['id']
+        comps = row['production_companies']
+        all_comps = companies_for_movie(movie_id, comps)
+        mov_comp = [to_moviecompany(ac) for ac in all_comps]
+        result.extend(mov_comp)
+
+    return result
+
+def to_moviecompany(company_entry: CompanyEntry) -> MovieCompany:
+    ce = company_entry
+    return MovieCompany(movie_id=ce.movie_index, company_id=ce.id)
+
+
+
 if __name__ == '__main__':
     df = pd.read_csv('./datas/tmdb_5000_credits.csv')
+    filename = './datas/tmdb_5000_credits.csv'
     casts_ = list(df['cast'])  # list[str]
-    crew_ = list(df['crew'])
 
-
-
-
+    res_actors = get_movie_actors(filename)
+    res_crew = get_movie_crew(filename)
+    print(type(res_actors))
+    crew_ppl = get_crew_people(list(df['crew']))
+    actors = get_actors_of_movie(list(df['cast']))
+    print(type(crew_ppl))
+    print(actors)
