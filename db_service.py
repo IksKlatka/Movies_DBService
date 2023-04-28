@@ -267,7 +267,7 @@ class DbService:
                 row = await connection.fetchrow('update movie_prod_companies set company_id=$2 where movie_id=$1 '
                                                 'returning *', mc.movie_id, mc.company_id)
 
-        return MovieLanguage(**dict(row))
+        return MovieCompany(**dict(row))
 
 
     #GENRES --------------------------------------
