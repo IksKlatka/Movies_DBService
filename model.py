@@ -89,3 +89,17 @@ class MovieCompany:
     movie_id: int
     company_id: int
 
+@dataclass
+class Country:
+    country_id: str
+    name: str
+
+@dataclass
+class CountryEntry:
+    movie_index: int
+    country_id: str
+    name: str
+@dataclass
+class MovieCountry:
+    movie_id: int
+    country_id: str
