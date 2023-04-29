@@ -77,11 +77,11 @@ def get_movies(filename: str) -> Iterable[Movie]:
 def get_movie_actors(filename: str) -> Iterable[MovieActor]:
     """Correctly assigning actors to movies"""
     df = pd.read_csv(filename)
-    subframe = df.loc[:, ['movie_index', 'cast']]
+    subframe = df.loc[:, ['movie_id', 'cast']]
     subframe_as_dict = subframe.to_dict(orient='records')
     result = []
     for row in subframe_as_dict:
-        movie_id = row['movie_index']
+        movie_id = row['movie_id']
         cast_string = row['cast']
         all_casts = get_cast_of_movie(movie_id, cast_string)
         all_casts = [to_movie_actor(ac) for ac in all_casts]
@@ -186,7 +186,120 @@ def to_moviecompany(company_entry: CompanyEntry) -> MovieCompany:
     ce = company_entry
     return MovieCompany(movie_id=ce.movie_index, company_id=ce.id)
 
+# COUNTRIES -------------------------
+def get_countries(filename: str) -> list[Country]:
 
+    df = pd.read_csv(filename)
+    prod_count = list(df['production_countries'])
+    entries = []
+    for count in prod_count:
+        dicts = json.loads(count)
+        for d in dicts:
+            entry = Country(country_id=d['iso_3166_1'], name=d['name'])
+            if entry not in entries:
+                entries.append(entry)
+
+    return entries
+
+def get_countries_of_movie(index: int, country_field: str):
+    dicts = json.loads(country_field)
+    countries = []
+    for d in dicts:
+        d['country_id'] = d['iso_3166_1']
+        del d['iso_3166_1']
+        country = CountryEntry(index, **d)
+        countries.append(country)
+
+    return countries
+
+def get_movie_country(filename: str):
+
+    df = pd.read_csv(filename)
+    subframe = df.loc[:, ['id', 'production_countries']]
+    subframe_as_dict = subframe.to_dict(orient='records')
+    result = []
+    for row in subframe_as_dict:
+        movie_id = row['id']
+        countries = row['production_countries']
+        all_countries = get_countries_of_movie(movie_id, countries)
+        movie_country = [to_moviecountry(mc) for mc in all_countries]
+        result.extend(movie_country)
+
+    return result
+
+def to_moviecountry(country_entry: CountryEntry) -> MovieCountry:
+    ce = country_entry
+    return MovieCountry(movie_id=ce.movie_index, country_id=ce.country_id)
+
+# GENRES ------------------------------------
+def get_genres(filename):
+    df = pd.read_csv(filename)
+    genres = list(df['genres'])  # list[str]
+    entries = []
+    for genre in genres:
+        dicts = json.loads(genre)
+        for d in dicts:
+            entry = Genre(genre_id=d['id'], name=d['name'])
+            if entry not in entries:
+                entries.append(entry)
+    return entries
+
+def get_movie_genres(filename):
+    df = pd.read_csv(filename)
+    df_sub = df.loc[:, ['id', 'genres']]  # wycinek tabel
+    df_as_dict = df_sub.to_dict(orient='records')
+    entries = []
+    for movie in df_as_dict:
+        genres = json.loads(movie.get('genres'))
+        for genre in genres:
+            entry = MovieGenre(movie_id=movie.get('id'), genre_id=genre['id'])
+            entries.append(entry)
+
+    return entries
+
+# KEYWORDS -----------------------------------------------
+def get_keywords(filename):
+
+    df = pd.read_csv(filename)
+    keywords = df['keywords']
+
+    entries = []
+    for kwd in keywords:
+        dicts = json.loads(kwd)
+        for d in dicts:
+            entry = Keyword(id=d['id'], name=d['name'])
+            if entry not in entries:
+                entries.append(entry)
+
+    return entries
+
+def get_keywords_from_movie(index: int, kwd_field: str):
+    dicts = json.loads(kwd_field)
+    keywords = []
+    for d in dicts:
+        kwd = KeywordEntry(index, **d)
+        keywords.append(kwd)
+
+    return keywords
+
+def get_movie_keywords(filename: str):
+
+    df = pd.read_csv(filename)
+    subframe = df.loc[:, ['id', 'keywords']]
+    subframe_as_dict = subframe.to_dict(orient='records')
+    result = []
+    for row in subframe_as_dict:
+        movie_id = row['id']
+        keywords = row['keywords']
+        all_kwords = get_keywords_from_movie(movie_id, keywords)
+        movie_kwords = [to_moviekeyword(mk) for mk in all_kwords]
+        result.extend(movie_kwords)
+
+    return result
+
+def to_moviekeyword(kwd_entry: KeywordEntry) -> MovieKeyword:
+    ke = kwd_entry
+    return MovieKeyword(movie_id=ke.movie_index, keyword_id=ke.id)
 
 if __name__ == '__main__':
     df = pd.read_csv('./datas/tmdb_5000_credits.csv')

@@ -269,16 +269,189 @@ class DbService:
 
         return MovieCompany(**dict(row))
 
+    # COUNTRIES ---------------------------------------
+    async def get_country(self, country_id: str) -> Country | None:
+        async with self.pool.acquire() as connection:
+            row = await connection.fetchrow('select * from countries where country_id=$1',
+                                            country_id)
 
-    #GENRES --------------------------------------
-    #MOVIE GENRES --------------------------------------
+            return Country(**(row)) if row else None
+
+    async def get_countries(self, offset=0, limit=100) -> list[Country]:
+        async with self.pool.acquire() as connection:
+            rows = await connection.fetch('select * from countries '
+                                             'order by country_id offset $1 limit $2',
+                                             offset, limit)
+
+        return [Country(**dict(row)) for row in rows]
+
+    async def upsert_country(self, country: Country) -> Country:
+        c = country
+        if await self.get_country(c.country_id) is None:
+            # insert
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow('insert into countries(country_id, name) values ($1, $2)'
+                                                'returning *', c.country_id, c.name)
+        else:
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow('update countries set name=$2 where country_id=$1 returning *',
+                                                c.country_id, c.name)
+        return Country(**dict(row))
+
+    # MOVIE COUNTRIES ---------------------------
+    async def get_movie_country(self, movie_id: int) -> MovieCountry:
+        async with self.pool.acquire() as connection:
+            row = await connection.fetchrow('select * from movie_countries where movie_id=$1',
+                                            movie_id)
+
+        return MovieCountry(**dict(row)) if row else None
+
+    async def upsert_movie_country(self, movie_country: MovieCountry) -> MovieCountry:
+        mc = movie_country
+        if await self.get_movie_country(mc.movie_id) is None:
+            # insert
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow('insert into movie_countries(movie_id, country_id) values ($1, $2)'
+                                                'returning *', mc.movie_id, mc.country_id)
+        else:
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow('update movie_countries set country_id=$2 where movie_id=$1 '
+                                                'returning *', mc.movie_id, mc.country_id)
+
+        return MovieCountry(**dict(row))
+
+
+    #GENRES ------------------------------------------------
+    async def get_genre(self, genre_id: int):
+        async with self.pool.acquire() as connection:
+            row = await connection.fetchrow('select * from genres where genre_id=$1', genre_id)
+        return Genre(**dict(row)) if row else None
+
+    async def get_genres(self, offset=0, limit=500) -> list[Genre]:
+        async with self.pool.acquire() as connection:
+            rows = await connection.fetch('select * from genres order by name offset $1 limit $2', offset, limit)
+        return [Genre(**dict(r)) for r in rows]
+
+    async def upsert_genre(self, genre: Genre) -> Genre:
+        if genre.genre_id is None:
+            # insert
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow("insert into genres(name) VALUES ($1) returning *",
+                                                genre.name)
+        elif await self.get_genre(genre.genre_id) is None:
+            # insert
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow("insert into genres(genre_id,name) VALUES ($1,$2) returning *",
+                                                genre.genre_id, genre.name)
+        else:
+            # update
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow("""update genres set name=$2 where genre_id=$1 returning *""",
+                                                genre.genre_id, genre.name)
+
+        return Genre(**dict(row))
+
+    #MOVIE GENRES ----------------------------------------------------
+    async def get_movie_genre(self, genre_id: int, movie_id: int):
+        async with self.pool.acquire() as connection:
+            row = await connection.fetchrow('select * from movie_genres where genre_id=$1 and movie_id=$2', genre_id,
+                                            movie_id)
+        return MovieGenre(**dict(row)) if row else None
+
+    async def get_movie_genres(self, offset=0, limit=500) -> list[Genre]:
+        async with self.pool.acquire() as connection:
+            rows = await connection.fetch('select * from movie_genres order by name offset $1 limit $2', offset, limit)
+        return [MovieGenre(**dict(r)) for r in rows]
+
+    async def upsert_movie_genre(self, genre_id, movie_id) -> MovieGenre:
+        if genre_id is None:
+            # insert
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow("insert into movie_genres(genre_id) VALUES ($1) returning *",
+                                                genre_id)
+        elif await self.get_movie_genre(genre_id, movie_id) is None:
+            # insert
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow(
+                    "insert into movie_genres(genre_id,movie_id) VALUES ($1,$2) returning *",
+                    genre_id, movie_id)
+        else:
+            # update
+
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow("""update movie_genres set genre_id=$2 where movie_id=$1 returning *""",
+                                                movie_id, genre_id)
+
+        return MovieGenre(**dict(row))
+
+    #KEYWORDS ---------------------------------------
+    async def get_keyword(self, kword_id: int):
+        async with self.pool.acquire() as connection:
+            row = await connection.fetchrow('select * from keywords where keyword_id=$1', kword_id)
+        return Keyword(**dict(row)) if row else None
+
+    async def get_keywords(self, offset=0, limit=500) -> list[Keyword]:
+        async with self.pool.acquire() as connection:
+            rows = await connection.fetch('select * from keywords order by name offset $1 limit $2', offset, limit)
+        return [Keyword(**dict(r)) for r in rows]
+
+    async def upsert_keyword(self, kword: Keyword) -> Keyword:
+        if kword.id is None:
+            # insert
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow("insert into keywords(name) VALUES ($1) returning *",
+                                                kword.name)
+        elif await self.get_genre(kword.id) is None:
+            # insert
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow("insert into keywords(keyword_id,name) VALUES ($1,$2) returning *",
+                                                kword.id, kword.name)
+        else:
+            # update
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow("""update keywords set name=$2 where keyword_id=$1 returning *""",
+                                                kword.id, kword.name)
+
+        return Keyword(**dict(row))
+
+    #MOVIE KEYWORDS ---------------------------------
+    async def get_movie_keyword(self, kword_id: int, movie_id: int):
+        async with self.pool.acquire() as connection:
+            row = await connection.fetchrow('select * from movie_keywords where keyword_id=$1 and movie_id=$2', kword_id,
+                                            movie_id)
+        return MovieKeyword(**dict(row)) if row else None
+
+    async def get_movie_keywords(self, offset=0, limit=500) -> list[Keyword]:
+        async with self.pool.acquire() as connection:
+            rows = await connection.fetch('select * from movie_keywords order by name offset $1 limit $2', offset, limit)
+        return [MovieKeyword(**dict(r)) for r in rows]
+
+    async def upsert_movie_keyword(self, kword_id, movie_id) -> MovieKeyword:
+        if kword_id is None:
+            # insert
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow("insert into movie_keywords(keyword_id) VALUES ($1) returning *",
+                                                kword_id)
+        elif await self.get_movie_genre(kword_id, movie_id) is None:
+            # insert
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow(
+                    "insert into movie_keywords(keyword_id,movie_id) VALUES ($1,$2) returning *",
+                    kword_id, movie_id)
+        else:
+            # update
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow("""update movie_keywords set keyword_id=$2 where movie_id=$1 returning *""",
+                                                movie_id, kword_id)
+
+        return MovieGenre(**dict(row))
 
 
 async def main_():
     db = DbService()
     await db.initialize()
     # await db.get_language(lang_id='en')
-    await db.get_movie_language(movie_id=285)
+    await db.get_countries(limit=15)
 
 
 if __name__ == '__main__':
