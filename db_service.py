@@ -30,22 +30,42 @@ class DbService:
         return Movie(**dict(row)) if row else None
 
     async def upsert_movie(self, movie: Movie) -> Movie:
+
         if movie.movie_id is None:
             # insert
             async with self.pool.acquire() as connection:
-                row = await connection.fetchrow("insert into movies(title) VALUES ($1) returning *",
-                                                movie.title)
+                row = await connection.fetchrow(
+                    "insert into movies(title,budget,popularity,release_date,revenue) "
+                    "VALUES ($1,$1,$2,$3,$4,$5) returning *",
+                    movie.title, movie.budget, movie.popularity,
+                    movie.release_date, movie.revenue
+                )
         elif await self.get_movie(movie.movie_id) is None:
             # insert
             async with self.pool.acquire() as connection:
-                row = await connection.fetchrow("insert into movies(movie_id,title) VALUES ($1,$2) returning *",
-                                                movie.movie_id, movie.title)
+                row = await connection.fetchrow(
+                    "insert into movies(movie_id,title,budget,popularity,release_date,revenue) "
+                    "VALUES ($1,$2,$3,$4,$5,$6) returning *",
+                    movie.movie_id, movie.title, movie.budget, movie.popularity,
+                    movie.release_date, movie.revenue
+                )
         else:
             # update
             async with self.pool.acquire() as connection:
-                row = await connection.fetchrow("""update movies set title=$2 where movie_index=$1 returning *""",
-                                                movie.movie_id, movie.title)
+                row = await connection.fetchrow("""update movies set title=$2, 
+                                                                budget = $3,
+                                                                popularity = $4,
+                                                                release_date = $5,
+                                                                revenue = $6 where movie_id=$1 returning *""",
+                                                movie.movie_id, movie.title, movie.budget, movie.popularity,
+                                                movie.release_date, movie.revenue
+                                                )
 
+        return Movie(**dict(row))
+
+    async def delete_movie(self, movie_id: int):
+        async with self.pool.acquire() as connection:
+            row = await connection.fetchrow('delete from movies where movie_id=$1', movie_id)
         return Movie(**dict(row))
 
 
@@ -149,7 +169,7 @@ class DbService:
         if await self.get_movie_actor(mc.movie_id, mc.person_id) is None:
             # insert
             async with self.pool.acquire() as connection:
-                row = await connection.fetchrow("insert into movie_crew(movie_index, person_id, credit_id, "
+                row = await connection.fetchrow("insert into movie_crew(movie_id, person_id, credit_id, "
                                                 "department, job, gender) VALUES "
                                                 "($1,$2,$3,$4,$5,$6) returning *",
                                                 mc.movie_id, mc.person_id, mc.credit_id, mc.department,
@@ -158,7 +178,7 @@ class DbService:
             # update
             async with self.pool.acquire() as connection:
                 row = await connection.fetchrow("""update movie_crew set credit_id=$3, department=$4, job=$5,
-                        gender=$6 where movie_index=$1 and person_id=$2 returning *""",
+                        gender=$6 where movie_id=$1 and person_id=$2 returning *""",
                                                 mc.movie_id, mc.person_id, mc.credit_id, mc.department,
                                                 mc.job, mc.gender
                                                 )
@@ -202,8 +222,8 @@ class DbService:
         async with self.pool.acquire() as connection:
             row = await connection.fetchrow('select * from movie_languages '
                                             'where movie_id=$1', movie_id)
-        result = MovieLanguage(**dict(row)) if row else None
-        print(result)
+        
+        return MovieLanguage(**dict(row))
 
     async def upsert_movie_language(self, movie_lang: MovieLanguage) -> MovieLanguage:
         ml = movie_lang
@@ -385,7 +405,7 @@ class DbService:
         return MovieGenre(**dict(row))
 
     #KEYWORDS ---------------------------------------
-    async def get_keyword(self, kword_id: int):
+    async def get_keyword(self, kword_id: int) -> Keyword:
         async with self.pool.acquire() as connection:
             row = await connection.fetchrow('select * from keywords where keyword_id=$1', kword_id)
         return Keyword(**dict(row)) if row else None
@@ -396,26 +416,26 @@ class DbService:
         return [Keyword(**dict(r)) for r in rows]
 
     async def upsert_keyword(self, kword: Keyword) -> Keyword:
-        if kword.id is None:
+        if kword.keyword_id is None:
             # insert
             async with self.pool.acquire() as connection:
                 row = await connection.fetchrow("insert into keywords(name) VALUES ($1) returning *",
                                                 kword.name)
-        elif await self.get_genre(kword.id) is None:
+        elif await self.get_genre(kword.keyword_id) is None:
             # insert
             async with self.pool.acquire() as connection:
                 row = await connection.fetchrow("insert into keywords(keyword_id,name) VALUES ($1,$2) returning *",
-                                                kword.id, kword.name)
+                                                kword.keyword_id, kword.name)
         else:
             # update
             async with self.pool.acquire() as connection:
                 row = await connection.fetchrow("""update keywords set name=$2 where keyword_id=$1 returning *""",
-                                                kword.id, kword.name)
+                                                kword.keyword_id, kword.name)
 
-        return Keyword(**dict(row))
+        return Keyword(**dict(row)) if True else None
 
     #MOVIE KEYWORDS ---------------------------------
-    async def get_movie_keyword(self, kword_id: int, movie_id: int):
+    async def get_movie_keyword(self, kword_id: int, movie_id: int) -> MovieKeyword:
         async with self.pool.acquire() as connection:
             row = await connection.fetchrow('select * from movie_keywords where keyword_id=$1 and movie_id=$2', kword_id,
                                             movie_id)
@@ -438,21 +458,49 @@ class DbService:
                 row = await connection.fetchrow(
                     "insert into movie_keywords(keyword_id,movie_id) VALUES ($1,$2) returning *",
                     kword_id, movie_id)
+
         else:
             # update
             async with self.pool.acquire() as connection:
                 row = await connection.fetchrow("""update movie_keywords set keyword_id=$2 where movie_id=$1 returning *""",
                                                 movie_id, kword_id)
 
-        return MovieGenre(**dict(row))
+        return MovieKeyword(**dict(row))
 
+    # BUDGETS ---------------------
+    async def get_budget(self, movie_id: int) ->  MovieBudget:
+        async with self.pool.acquire() as connection:
+            row = await connection.fetchrow('select * from movie_budget where movie_id=$1', movie_id)
+        return MovieBudget(**dict(row)) if row else None
+
+    async def upsert_movie_budget(self, movie_bud: MovieBudget) -> MovieBudget:
+        if movie_bud.budget is None:
+            # insert
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow("insert into movie_budget(budget) VALUES ($1) returning *",
+                                                movie_bud.budget)
+        elif await self.get_movie_genre(movie_bud.budget, movie_bud.movie_id) is None:
+            # insert
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow(
+                    "insert into movie_budget(movie_id, budget) VALUES ($1,$2) returning *",
+                    movie_bud.movie_id, movie_bud.budget)
+
+        else:
+            # update
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow(
+                    """update movie_budget set budget=$2 where movie_id=$1 returning *""",
+                    movie_bud.movie_id, movie_bud.budget)
+
+        return MovieBudget(**dict(row)) if row else None
 
 async def main_():
     db = DbService()
     await db.initialize()
     # await db.get_language(lang_id='en')
-    await db.get_countries(limit=15)
-
+    a = await db.delete_movie(movie_id=1995)
+    print(a)
 
 if __name__ == '__main__':
     run(main_())

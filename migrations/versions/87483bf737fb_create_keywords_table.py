@@ -20,7 +20,7 @@ def upgrade() -> None:
 
     op.execute(f"""
     CREATE TABLE keywords(
-        keyword_id INT SERIAL PRIMARY KEY UNIQUE NOT NULL,
+        keyword_id SERIAL PRIMARY KEY NOT NULL,
         name TEXT        
         );
 """)

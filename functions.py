@@ -1,13 +1,15 @@
 import json
 from collections.abc import Iterable
+from datetime import datetime
+
 import pandas as pd
 from model import *
 
 pd.options.display.max_rows = 10
 
 # ACTORS ----------------
-def get_cast():
-    df = pd.read_csv('./datas/tmdb_5000_credits.csv')
+def get_cast(filename):
+    df = pd.read_csv(filename)
     casts_ = list(df['cast'])
     return casts_
 
@@ -33,8 +35,8 @@ def get_actors_of_movie(casts: list[str]) -> Iterable[Actor]:
 
 
 # CREW ----------------
-def get_crew():
-    df = pd.read_csv('datas/tmdb_5000_credits.csv')
+def get_crew(filename):
+    df = pd.read_csv(filename)
     crew_ = list(df['crew'])
     return crew_
 
@@ -68,10 +70,19 @@ def to_movie_crew(crew_entry: CrewEntry) -> MovieCrew:
 def get_movies(filename: str) -> Iterable[Movie]:
     """Get movies from CSV"""
     df = pd.read_csv(filename)
-    subframe = df.loc[:, ['id', 'title']]
+    subframe = df.loc[:, ['id', 'title', 'budget', 'popularity', 'release_date', 'revenue']]
     subframe_as_dict = subframe.to_dict(orient='records')
-    #comprehension: creating list[object] of Movies
-    movies = [Movie(movie_id=d['id'], title=d['title']) for d in subframe_as_dict]
+    movies = []
+    for d in subframe_as_dict:
+        date = d['release_date']
+        try:
+            release_date = datetime.strptime(str(date), '%Y-%m-%d').date()
+        except:
+            print(date)
+
+        movies.append(Movie(movie_id=d['id'], title=d['title'], budget=d['budget'], popularity=d['popularity'],
+                            release_date= release_date , revenue=d['revenue'] / 1000))
+
     return movies
 
 def get_movie_actors(filename: str) -> Iterable[MovieActor]:
@@ -98,11 +109,11 @@ def to_movie_actor(cast_entry: CastEntry) -> MovieActor:
 def get_movie_crew(filename: str) -> Iterable[MovieCrew]:
     """Correctly assigning crew people to movies"""
     df = pd.read_csv(filename)
-    subframe = df.loc[:, ['movie_index', 'crew']]
+    subframe = df.loc[:, ['movie_id', 'crew']]
     subframe_as_dict = subframe.to_dict(orient='records')
     result=[]
     for row in subframe_as_dict:
-        movie_id = row['movie_index']
+        movie_id = row['movie_id']
         crew = row['crew']
         all_crew = get_crew_of_movie(movie_id, crew)
         all_crew = [to_movie_crew(ac) for ac in all_crew]
@@ -142,9 +153,9 @@ def get_movie_lang(filename: str):
 
 # PRODUCTION COMPANIES --------------
 
-def get_companies() -> list[Company]:
+def get_companies(filename) -> list[Company]:
     """COMPANY object"""
-    df= pd.read_csv('datas/tmdb_5000_movies.csv')
+    df= pd.read_csv(filename)
     comps = df['production_companies']
     entries = []
     for c in comps:
@@ -166,9 +177,9 @@ def companies_for_movie(index: int, company_field: str):
 
     return comps
 
-def get_company_of_movie() -> list[MovieCompany]:
+def get_company_of_movie(filename) -> list[MovieCompany]:
 
-    df= pd.read_csv('datas/tmdb_5000_movies.csv')
+    df= pd.read_csv(filename)
     subframe = df.loc[:, ['id', 'production_companies']]
     subframe_as_dict = subframe.to_dict(orient='records')
 
@@ -267,9 +278,10 @@ def get_keywords(filename):
     for kwd in keywords:
         dicts = json.loads(kwd)
         for d in dicts:
-            entry = Keyword(id=d['id'], name=d['name'])
+            entry = Keyword(keyword_id=d['id'], name=d['name'])
             if entry not in entries:
                 entries.append(entry)
+                # entries = set(entries)
 
     return entries
 
@@ -301,15 +313,24 @@ def to_moviekeyword(kwd_entry: KeywordEntry) -> MovieKeyword:
     ke = kwd_entry
     return MovieKeyword(movie_id=ke.movie_index, keyword_id=ke.id)
 
-if __name__ == '__main__':
-    df = pd.read_csv('./datas/tmdb_5000_credits.csv')
-    filename = './datas/tmdb_5000_credits.csv'
-    casts_ = list(df['cast'])  # list[str]
+def get_movie_budget(filename):
 
-    res_actors = get_movie_actors(filename)
-    res_crew = get_movie_crew(filename)
-    print(type(res_actors))
-    crew_ppl = get_crew_people(list(df['crew']))
-    actors = get_actors_of_movie(list(df['cast']))
-    print(type(crew_ppl))
-    print(actors)
+    df = pd.read_csv(filename)
+    df_sub = df.loc[:, ['id', 'budget']]  # wycinek tabel
+    dict_df_sub = df_sub.to_dict(orient='records')
+    mov_bud = [MovieBudget(movie_id=d['id'], budget=d['budget'])\
+              for d in dict_df_sub]
+
+    return mov_bud
+
+
+if __name__ == '__main__':
+    filename_c = './datas/tmdb_5000_credits.csv'
+    filename_m = './datas/tmdb_5000_movies.csv'
+    cdf = pd.read_csv(filename_c)
+    mdf = pd.read_csv(filename_m)
+
+    casts_ = list(cdf['cast'])  # list[str]
+
+    mb = get_movie_budget(filename_m)
+    print(mb)

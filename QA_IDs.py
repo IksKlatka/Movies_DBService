@@ -1,6 +1,6 @@
 """
-czy pole "id" jest unikalne dla danego aktora, czyli pola "name"
-(czyli: czy można interpretować "id" jako "actor_id")
+czy pole "keyword_id" jest unikalne dla danego aktora, czyli pola "name"
+(czyli: czy można interpretować "keyword_id" jako "actor_id")
 czy pole "credit_id" jest unikalne wśród wszystkich filmów i elementów listy cast każdego z filmów...
 (czyli: czy możnaby go w zasadzie traktować jako primary key w tabeli "Cast" którą będziemy tworzyli)
 """
@@ -24,7 +24,7 @@ def check_assignment_crew(crew: list[str]):
     unique_pairs = set(name_id_pairs)
     n_pairs = len(unique_pairs)
     n_names = len(set([c for i, c in unique_pairs]))  # unique names
-    n_ids = len(set([i for i, c in unique_pairs]))  # unique id's
+    n_ids = len(set([i for i, c in unique_pairs]))  # unique keyword_id's
 
     print(f'{n_pairs=}')
     print(f'{n_ids=}')
@@ -77,7 +77,7 @@ def check_assignment_cast(cast: list[str]):
     unique_pairs = set(name_id_pairs)
     n_pairs = len(unique_pairs)
     n_names = len(set([c for i, c in unique_pairs]))  # unique names
-    n_ids = len(set([i for i, c in unique_pairs]))  # unique id's
+    n_ids = len(set([i for i, c in unique_pairs]))  # unique keyword_id's
 
     print(f'{n_pairs=}')
     print(f'{n_ids=}')
@@ -96,7 +96,7 @@ def check_assignment_cast(cast: list[str]):
 
         for (k, v) in id_to_name.items():
             if len(v) > 1:
-                print('id->names ', k, v)
+                print('keyword_id->names ', k, v)
 
         # -----
         name_to_id = defaultdict(lambda: set())

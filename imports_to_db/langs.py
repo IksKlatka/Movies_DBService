@@ -25,7 +25,7 @@ async def create_movie_languages():
     movie_langs = get_movie_lang('../datas/tmdb_5000_movies.csv')
 
     for ml, mlang in enumerate(movie_langs):
-        await  db.upsert_movie_language(MovieLanguage(movie_id=mlang.movie_index,
+        await  db.upsert_movie_language(MovieLanguage(movie_id=mlang.movie_id,
                                                       lang_id=mlang.lang_id))
         if ml%100 == 0:
             print(f'import movie languages in {ml / len(movie_langs) * 100:.1f}% done')

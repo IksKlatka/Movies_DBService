@@ -4,13 +4,13 @@ from functions import get_movie_actors
 from db_service import DbService
 from model import Actor
 
-
+filename = '../datas/tmdb_5000_credits.csv'
 #ONLY ACTORS -------------------
 async def create_actors():
     db = DbService()
     await db.initialize() # == establishing connection
 
-    casts_ = get_cast()
+    casts_ = get_cast(filename)
     actors = get_actors_of_movie(casts_)
     actors = [Actor(*a) for a in actors]
 
@@ -26,7 +26,6 @@ async def create_movie_actors():
     db = DbService()
     await db.initialize() # == establishing connection
 
-    filename = './datas/tmdb_5000_credits.csv'
     movie_actors = get_movie_actors(filename)
 
     for ma, mactor in enumerate(movie_actors):
@@ -39,8 +38,8 @@ async def create_movie_actors():
 
 
 if __name__ == "__main__":
-    # run(create_actors())
-    run(create_movie_actors())
+    run(create_actors())
+    # run(create_movie_actors())
 
     # get_cast()
 

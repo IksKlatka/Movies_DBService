@@ -3,11 +3,11 @@ from functions import get_countries, get_movie_country
 from db_service import DbService
 from model import Country, MovieCountry
 
-filename = './datas/tmdb_5000_movies.csv'
+filename = '../datas/tmdb_5000_movies.csv'
 
 
 #ONLY LANGUAGES ---------------
-async def create_counties():
+async def create_countries():
     db = DbService()
     await db.initialize()
 
@@ -37,4 +37,5 @@ async def create_movie_country():
 
 if __name__ == "__main__":
     # run(create_counties())
+    # run(create_countries())
     run(create_movie_country())

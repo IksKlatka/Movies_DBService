@@ -25,7 +25,7 @@ def upgrade() -> None:
             CONSTRAINT fk_movie_id FOREIGN KEY (movie_id)
                 REFERENCES movies(movie_id),
             CONSTRAINT fk_keyword_id FOREIGN KEY (keyword_id)
-                REFERENCES keyword(keyword_id)  
+                REFERENCES keywords(keyword_id)  
             );
     """)
 

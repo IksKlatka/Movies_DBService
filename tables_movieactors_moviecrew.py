@@ -40,7 +40,7 @@ def create_movie_actors_table(df: pd.DataFrame):
 
     # renaming columns
     movieactor_entries = pd.DataFrame(all_cast_entries)
-    movieactor_entries.rename(columns={'order': 'orders', 'id': 'actor_id'},
+    movieactor_entries.rename(columns={'order': 'orders', 'keyword_id': 'actor_id'},
                          inplace=True)
 
     # changing order of columns
@@ -49,7 +49,7 @@ def create_movie_actors_table(df: pd.DataFrame):
                                    'character', 'credit_id', 'gender', 'orders']]
 
     # adding extra column necessary in the table
-    movieactor_entries['movie_index'] = mdf['id']
+    movieactor_entries['movie_index'] = mdf['keyword_id']
     movieactor_entries.insert(0, 'movie_index', movieactor_entries.pop('movie_index'))
     # movieactor_entries.info()
 
@@ -78,7 +78,7 @@ def create_movie_crew_table(df: pd.DataFrame):
     moviecrew_table.insert(2, 'movie_index', moviecrew_table.pop('movie_index'))
 
     #renaming column and changing their order in DF
-    moviecrew_table = moviecrew_table.rename(columns={'id': 'person_id'})
+    moviecrew_table = moviecrew_table.rename(columns={'keyword_id': 'person_id'})
     moviecrew_table = moviecrew_table[['credit_id', 'movie_index', 'person_id',
                              'job', 'department', 'gender']]
 

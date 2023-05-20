@@ -6,11 +6,13 @@ from model import Company
 
 # ONLY COMPANIES ----------------
 
+filename = '../datas/tmdb_5000_movies.csv'
+
 async def create_companies():
     db = DbService()
     await db.initialize()
 
-    companies = get_companies()
+    companies = get_companies(filename)
 
     for c, comp in enumerate(companies):
         await db.upsert_prod_company(comp)
@@ -24,7 +26,7 @@ async def create_movie_companies():
     db = DbService()
     await db.initialize()
 
-    movie_comps = get_company_of_movie()
+    movie_comps = get_company_of_movie(filename)
 
     for mc, mcomp in enumerate(movie_comps):
         await db.upsert_movie_company(mcomp)

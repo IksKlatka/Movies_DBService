@@ -19,6 +19,21 @@ async def create_movies():
     await gather(*tasks)
     print('all done')
 
+async def delete_movies():
+    db = DbService()
+    await db.initialize()
+
+    movies = get_movies('../datas/tmdb_5000_movies.csv')
+    tasks = []
+    for i, m in enumerate(movies):
+        tasks.append(create_task(db.delete_movie(m.movie_id)))
+        if 1% 100== 0:
+            print(f'delete in {i / len(movies) * 100:.1f}% done')
+    await gather(*tasks)
+    print('all done')
+
+
 
 if __name__ == '__main__':
-    run(create_movies())
+    # run(create_movies())
+    run(delete_movies())

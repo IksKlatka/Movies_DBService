@@ -2,13 +2,13 @@ from asyncio import run, sleep
 from functions import get_genres, get_movie_genres
 from db_service import DbService
 
-
+filename = '../datas/tmdb_5000_movies.csv'
 async def create_genres():
 
     db = DbService()
     await db.initialize()  # tu łączymy się z bazą danych
 
-    genres = get_genres()
+    genres = get_genres(filename)
 
     for i, genre in enumerate(genres):
         await db.upsert_genre(genre)
@@ -21,7 +21,7 @@ async def create_movie_genres():
     db = DbService()
     await db.initialize()
 
-    genres = get_movie_genres('datas/tmdb_5000_movies.csv')
+    genres = get_movie_genres('../datas/tmdb_5000_movies.csv')
 
     for i, genre in enumerate(genres):
         await db.upsert_movie_genre(genre.genre_id, genre.movie_id)

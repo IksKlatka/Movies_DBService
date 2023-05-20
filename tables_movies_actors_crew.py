@@ -30,8 +30,8 @@ def create_table_actors(df: pd.DataFrame):
 
     #creating DF from extracted data
     actors = pd.DataFrame(entries)
-    actors = actors.rename(columns={'id': 'actor_id'})
-    #extracting id and name of an actor from DF above
+    actors = actors.rename(columns={'keyword_id': 'actor_id'})
+    #extracting keyword_id and name of an actor from DF above
     actors_table = actors[['name', 'actor_id']]
     actors_table = actors_table.drop_duplicates('name')
 
@@ -40,9 +40,9 @@ def create_table_actors(df: pd.DataFrame):
 
 def create_table_movies(df: pd.DataFrame):
 
-    # creating new DF containing movies id and title
-    movies_table = df[['id', 'title']]
-    # movies_table = movies_table.set_index('id')
+    # creating new DF containing movies keyword_id and title
+    movies_table = df[['keyword_id', 'title']]
+    # movies_table = movies_table.set_index('keyword_id')
     movies_table = movies_table.drop_duplicates('title')
     # save_to_file(movies_table, 'table_movies.csv')
     return movies_table
@@ -57,7 +57,7 @@ def create_table_crew(df: pd.DataFrame):
             all_crew_entries.append(e)
 
     crew = pd.DataFrame(all_crew_entries)
-    crew_table = crew[['id', 'name']]
+    crew_table = crew[['keyword_id', 'name']]
     crew_table = crew_table.drop_duplicates('name')
     # crew_table = crew_table.set_index('name')
 

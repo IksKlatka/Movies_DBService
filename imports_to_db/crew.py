@@ -3,12 +3,13 @@ from functions import get_crew, get_crew_people, get_movie_crew
 from db_service import DbService
 from model import CrewPerson
 
+filename = '../datas/tmdb_5000_credits.csv'
 #ONLY PEOPLE --------------
 async def create_crew():
     db = DbService()
     await db.initialize()
 
-    crew_ = get_crew()
+    crew_ = get_crew(filename)
     people = get_crew_people(crew_)
     people = [CrewPerson(*p) for p in people]
 
@@ -24,7 +25,6 @@ async def create_movie_crew():
     db = DbService()
     await db.initialize()
 
-    filename = './datas/tmdb_5000_credits.csv'
     movie_crew = get_movie_crew(filename)
 
     for mc, mcrew in enumerate(movie_crew):

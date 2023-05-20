@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from datetime import date
+
 
 @dataclass
 class CastEntry:
@@ -20,7 +22,7 @@ class Actor:
 @dataclass
 class MovieActor:
     movie_id: int
-    actor_id: int  # id of the actor
+    actor_id: int  # keyword_id of the actor
     cast_id: int
     character: str
     credit_id: str
@@ -57,6 +59,10 @@ class MovieCrew:
 class Movie:
     movie_id: int
     title: str
+    budget: int
+    popularity: float
+    release_date: date
+    revenue: int
 
 @dataclass
 class Language:
@@ -116,7 +122,7 @@ class MovieGenre:
 
 @dataclass
 class Keyword:
-    id: int
+    keyword_id: int
     name: str
 
 @dataclass
@@ -129,3 +135,8 @@ class KeywordEntry:
 class MovieKeyword:
     movie_id: int
     keyword_id: int
+
+@dataclass
+class MovieBudget:
+    movie_id: int
+    budget: int
