@@ -32,4 +32,5 @@ async def create_movie_keywords():
 
 
 if __name__ == "__main__":
+    # run(create_keywords())
     run(create_movie_keywords())

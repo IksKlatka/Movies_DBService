@@ -1,4 +1,4 @@
-from asyncio import run, sleep
+from asyncio import run, create_task, gather, sleep
 from functions import get_spoken_langs, get_movie_lang
 from db_service import DbService
 from model import Language, MovieLanguage
@@ -17,6 +17,16 @@ async def create_languages():
 
     await sleep(1)
 
+async def add_missing_to_langs():
+    db = DbService()
+    await db.initialize()
+
+    tasks =[]
+    lang = Language(lang_id='nb', lang='Norwegian Bokmål')
+    tasks.append(create_task(db.upsert_language(lang)))
+    await gather(*tasks)
+    print('done')
+
 #MOVIE LANGUAGES ---------------
 async def create_movie_languages():
     db = DbService()
@@ -33,5 +43,6 @@ async def create_movie_languages():
 
 
 if __name__ == "__main__":
+    run(create_languages())
     run(create_movie_languages())
-
+    # run(add_missing_to_langs())

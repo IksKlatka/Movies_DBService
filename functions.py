@@ -32,8 +32,6 @@ def get_actors_of_movie(casts: list[str]) -> Iterable[Actor]:
     return actors
 
 
-
-
 # CREW ----------------
 def get_crew(filename):
     df = pd.read_csv(filename)
@@ -63,7 +61,6 @@ def to_movie_crew(crew_entry: CrewEntry) -> MovieCrew:
     c = crew_entry
     return MovieCrew(movie_id=c.movie_index, person_id=c.id, credit_id=c.credit_id,
                      department=c.department, gender=c.gender, job=c.job)
-
 
 
 #MOVIES ----------------
@@ -137,6 +134,7 @@ def get_spoken_langs(filename: str):
             entry = Language(lang_id=d['iso_639_1'], lang=d['name'])
             if entry not in entries:
                 entries.append(entry)
+    entries.append(Language(lang_id='nb', lang='Norwegian Bokmål'))
 
     return entries
 

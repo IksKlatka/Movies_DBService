@@ -1,6 +1,6 @@
 #python files
 trials.py
-inserting_data.sql
+testing_dbservice.py
 
 #folders
 venv

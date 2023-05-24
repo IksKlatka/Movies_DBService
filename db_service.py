@@ -1,4 +1,4 @@
-from asyncio import run, sleep
+from asyncio import run
 import asyncpg
 from dotenv import load_dotenv
 from os import getenv
@@ -19,6 +19,10 @@ class DbService:
 
 
     # MOVIES --------------------------------------
+    #todo: get_by_movieIDs
+    def get_by_movieids(movieids: list[int]) -> list[Movie]:
+        pass
+
     async def get_movies(self, offset=0, limit=500) -> list[Movie]:
         async with self.pool.acquire() as connection:
             rows = await connection.fetch('select * from movies order by title offset $1 limit $2', offset, limit)
@@ -65,9 +69,8 @@ class DbService:
 
     async def delete_movie(self, movie_id: int):
         async with self.pool.acquire() as connection:
-            row = await connection.fetchrow('delete from movies where movie_id=$1', movie_id)
-        return Movie(**dict(row))
-
+            await connection.fetchrow('delete from movies where movie_id=$1', movie_id)
+        return f'movie {movie_id} deleted'
 
     # ACTORS --------------------------------------
     async def get_actor(self, actor_id: int) -> Actor | None:
@@ -99,6 +102,10 @@ class DbService:
 
         return Actor(**dict(row))
 
+    async def delete_actor(self, actor_id: int):
+        async with self.pool.acquire() as connection:
+            await connection.fetchrow('delete from actors where actor_id=$1', actor_id)
+        return f'actor {actor_id} deleted'
 
     # MOVIE_ACTORS --------------------------------------
     async def get_movie_actor(self, movie_id: int, actor_id: int) -> MovieActor | None:
@@ -155,6 +162,10 @@ class DbService:
 
         return CrewPerson(**dict(row))
 
+    async def delete_person(self, person_id: int) -> CrewPerson | None:
+        async with self.pool.acquire() as connection:
+             await connection.fetchrow(f'delete from crew where person_id=$1', person_id)
+        return f'crew person {person_id} deleted'
 
     #MOVIE_CREW --------------------------------------
     async def get_movie_crew(self, movie_id: int, person_id: int) -> MovieCrew | None:
@@ -187,14 +198,12 @@ class DbService:
         return MovieCrew(movie_id=mc.movie_id, person_id=mc.person_id, credit_id=mc.credit_id,
                          department=mc.department, job=mc.job, gender=mc.gender)
 
-
     #LANGUAGES --------------------------------------
     async def get_language(self, lang_id: int) -> Language | None:
         async with self.pool.acquire() as connection:
             row = await connection.fetchrow('select * from languages '
                                             'where lang_id=$1', lang_id)
         result = Language(**dict(row)) if row else None
-
 
     async def get_languages(self, offset=0, limit=100) -> list[Language]:
         async with self.pool.acquire() as connection:
@@ -216,27 +225,32 @@ class DbService:
                                                 l.lang_id, l.lang)
         return Language(**dict(row))
 
+    async def delete_language(self, lang_id: int) -> Language | None:
+        async with self.pool.acquire() as connection:
+             await connection.fetchrow(f'delete from languages where lang_id=$1', lang_id)
+        return f'language {lang_id} deleted'
 
     #MOVIE LANGUAGES --------------------------------------
-    async def get_movie_language(self, movie_id: int) -> MovieLanguage:
+    async def get_movie_language(self, movie_id: int) -> MovieLanguage | None:
         async with self.pool.acquire() as connection:
             row = await connection.fetchrow('select * from movie_languages '
                                             'where movie_id=$1', movie_id)
         
-        return MovieLanguage(**dict(row))
+        return MovieLanguage(**dict(row)) if row else None
 
     async def upsert_movie_language(self, movie_lang: MovieLanguage) -> MovieLanguage:
         ml = movie_lang
         if await self.get_movie_language(ml.movie_id) is None:
             #insert
             async with self.pool.acquire() as connection:
-                row = await connection.fetchrow('insert into movie_languages(movie_id, lang_id) values ($1, $2)'
+                row = await connection.fetchrow('insert into movie_languages (movie_id, lang_id) values ($1, $2)'
                                                 'returning *', ml.movie_id, ml.lang_id)
         else:
             async with self.pool.acquire() as connection:
                 row = await connection.fetchrow('update movie_languages set lang_id=$2 where movie_id=$1 '
                                                 'returning *', ml.movie_id, ml.lang_id)
-        return MovieLanguage(**dict(row))
+
+        return MovieLanguage(movie_id=ml.movie_id, lang_id=ml.lang_id)
 
     #COMPANIES --------------------------------------
     async def get_prod_company(self, comp_id: int) -> Company | None:
@@ -266,6 +280,11 @@ class DbService:
                 row = await connection.fetchrow('update prod_companies set name=$2 where company_id=$1 returning *',
                                                 c.id, c.name)
         return Pcompany(**dict(row))
+
+    async def delete_prod_company(self, comp_id: int) -> Company | None:
+        async with self.pool.acquire() as connection:
+             await connection.fetchrow(f'delete from prod_companies where company_id=$1', comp_id)
+        return f'production company {comp_id} deleted'
 
     #MOVIE COMPANIES --------------------------------------
     async def get_movie_company(self, movie_id: int) -> MovieCompany:
@@ -318,6 +337,12 @@ class DbService:
                                                 c.country_id, c.name)
         return Country(**dict(row))
 
+    async def delete_country(self, country_id: int) -> Country | None:
+        async with self.pool.acquire() as connection:
+             await connection.fetchrow(f'delete from countries where country_id=$1', country_id)
+        return f'country {country_id} deleted'
+
+
     # MOVIE COUNTRIES ---------------------------
     async def get_movie_country(self, movie_id: int) -> MovieCountry:
         async with self.pool.acquire() as connection:
@@ -339,7 +364,6 @@ class DbService:
                                                 'returning *', mc.movie_id, mc.country_id)
 
         return MovieCountry(**dict(row))
-
 
     #GENRES ------------------------------------------------
     async def get_genre(self, genre_id: int):
@@ -370,6 +394,11 @@ class DbService:
                                                 genre.genre_id, genre.name)
 
         return Genre(**dict(row))
+
+    async def delete_genre(self, genre_id: int) -> Genre | None:
+        async with self.pool.acquire() as connection:
+             await connection.fetchrow(f'delete from genres where genre_id=$1', genre_id)
+        return f'genre {genre_id} deleted'
 
     #MOVIE GENRES ----------------------------------------------------
     async def get_movie_genre(self, genre_id: int, movie_id: int):
@@ -415,7 +444,7 @@ class DbService:
             rows = await connection.fetch('select * from keywords order by name offset $1 limit $2', offset, limit)
         return [Keyword(**dict(r)) for r in rows]
 
-    async def upsert_keyword(self, kword: Keyword) -> Keyword:
+    async def upsert_keyword(self, kword: Keyword) -> Keyword | None:
         if kword.keyword_id is None:
             # insert
             async with self.pool.acquire() as connection:
@@ -432,7 +461,12 @@ class DbService:
                 row = await connection.fetchrow("""update keywords set name=$2 where keyword_id=$1 returning *""",
                                                 kword.keyword_id, kword.name)
 
-        return Keyword(**dict(row)) if True else None
+        return Keyword(**dict(row)) if row else None
+
+    async def delete_keyword(self, kword_id: int) -> Keyword | None:
+        async with self.pool.acquire() as connection:
+            await connection.fetchrow(f'delete from keywords where keyword_id=$1', kword_id)
+        return f'keyword {kword_id} deleted'
 
     #MOVIE KEYWORDS ---------------------------------
     async def get_movie_keyword(self, kword_id: int, movie_id: int) -> MovieKeyword:

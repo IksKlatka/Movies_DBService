@@ -19,13 +19,8 @@ depends_on = None
 def upgrade() -> None:
     op.execute(f"""
         CREATE TABLE movie_keywords(
-            movie_id INT,
-            keyword_id INT,
-
-            CONSTRAINT fk_movie_id FOREIGN KEY (movie_id)
-                REFERENCES movies(movie_id),
-            CONSTRAINT fk_keyword_id FOREIGN KEY (keyword_id)
-                REFERENCES keywords(keyword_id)  
+            movie_id INT references movies(movie_id) on delete cascade,
+            keyword_id INT references keywords(keyword_id) on delete cascade
             );
     """)
 

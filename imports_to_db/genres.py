@@ -32,4 +32,5 @@ async def create_movie_genres():
 
 
 if __name__ == "__main__":
+    run(create_genres())
     run(create_movie_genres())

@@ -19,18 +19,13 @@ def upgrade() -> None:
     op.execute(f"""
     --sql
     CREATE TABLE movie_crew(
-        movie_id INT,
-        person_id INT,
+        movie_id INT REFERENCES movies(movie_id) ON DELETE CASCADE,
+        person_id INT REFERENCES crew(person_id) ON DELETE CASCADE,
         credit_id TEXT,
         department TEXT,
         job TEXT,
-        gender INT,
-
-        CONSTRAINT fk_movie_id FOREIGN KEY (movie_id)
-            REFERENCES movies(movie_id),
-        CONSTRAINT fk_person_id FOREIGN KEY (person_id)
-            REFERENCES crew(person_id)      
-    )
+        gender INT    
+    );
 
 """)
 

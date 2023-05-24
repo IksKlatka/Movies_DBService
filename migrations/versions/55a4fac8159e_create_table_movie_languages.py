@@ -20,14 +20,9 @@ def upgrade() -> None:
     op.execute(f"""
     --sql 
     CREATE TABLE movie_languages (
-        movie_id INT NOT NULL,
-        lang_id VARCHAR(2) NOT NULL,
-        
-        CONSTRAINT fk_movie_id FOREIGN KEY (movie_id)
-            REFERENCES movies(movie_id),
-        CONSTRAINT fk_lang_id FOREIGN KEY (lang_id)
-            REFERENCES languages(lang_id)    
-    )
+        movie_id INT REFERENCES movies(movie_id) ON DELETE CASCADE,
+        lang_id VARCHAR(2) NOT NULL REFERENCES languages(lang_id) ON DELETE CASCADE
+    );
 
 """)
 

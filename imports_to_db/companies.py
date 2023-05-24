@@ -36,4 +36,5 @@ async def create_movie_companies():
     await sleep(1)
 
 if __name__ == "__main__":
+    run(create_companies())
     run(create_movie_companies())

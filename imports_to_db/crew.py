@@ -36,4 +36,5 @@ async def create_movie_crew():
 
 
 if __name__ == "__main__":
+    run(create_crew())
     run(create_movie_crew())

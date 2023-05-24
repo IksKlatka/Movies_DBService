@@ -39,7 +39,6 @@ async def create_movie_actors():
 
 if __name__ == "__main__":
     run(create_actors())
-    # run(create_movie_actors())
+    run(create_movie_actors())
 
-    # get_cast()
 

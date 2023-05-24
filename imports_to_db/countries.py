@@ -36,6 +36,5 @@ async def create_movie_country():
 
 
 if __name__ == "__main__":
-    # run(create_counties())
-    # run(create_countries())
+    run(create_countries())
     run(create_movie_country())
