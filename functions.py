@@ -313,15 +313,6 @@ def to_moviekeyword(kwd_entry: KeywordEntry) -> MovieKeyword:
     ke = kwd_entry
     return MovieKeyword(movie_id=ke.movie_index, keyword_id=ke.id)
 
-def get_movie_budget(filename):
-
-    df = pd.read_csv(filename)
-    df_sub = df.loc[:, ['id', 'budget']]  # wycinek tabel
-    dict_df_sub = df_sub.to_dict(orient='records')
-    mov_bud = [MovieBudget(movie_id=d['id'], budget=d['budget'])\
-              for d in dict_df_sub]
-
-    return mov_bud
 
 
 if __name__ == '__main__':
@@ -331,6 +322,3 @@ if __name__ == '__main__':
     mdf = pd.read_csv(filename_m)
 
     casts_ = list(cdf['cast'])  # list[str]
-
-    mb = get_movie_budget(filename_m)
-    print(mb)

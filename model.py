@@ -136,7 +136,3 @@ class MovieKeyword:
     movie_id: int
     keyword_id: int
 
-@dataclass
-class MovieBudget:
-    movie_id: int
-    budget: int

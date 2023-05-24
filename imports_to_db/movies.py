@@ -35,5 +35,5 @@ async def delete_movies():
 
 
 if __name__ == '__main__':
-    # run(create_movies())
-    run(delete_movies())
+    run(create_movies())
+    # run(delete_movies())
